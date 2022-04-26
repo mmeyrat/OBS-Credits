@@ -32,35 +32,14 @@ def script_properties():
     return props
 
 
+def script_load(settings):
+    obs.obs_frontend_add_event_callback(handle_event)
+
+
 def script_update(settings):
     global source_name
     
     source_name = obs.obs_data_get_string(settings, "source")
-
-
-def fill_text_object():
-    global source_name
-    global text
-    
-    source = obs.obs_get_source_by_name(source_name)
-    
-    if source is not None:
-        settings = obs.obs_data_create()
-        obs.obs_data_set_string(settings, "text", text)
-        obs.obs_source_update(source, settings)
-        obs.obs_data_release(settings)
-        obs.obs_source_release(source)
-
-
-def update_text():
-    global text
-
-    for r in data:
-        text += f"{r['from_name']}\n"
-
-
-def script_load(settings):
-    obs.obs_frontend_add_event_callback(handle_event)
 
 
 def handle_event(event):
@@ -80,10 +59,30 @@ def handle_scene_change():
     obs.obs_source_release(scene)
 
 
+def update_text():
+    global text
+
+    for r in data:
+        text += f"{r['from_name']}\n"
+
+
 def fetch_followers(): 
     global data
 
     header = {"Client-ID": client_id, "Authorization": f"Bearer {auth_token}"}
     response = rq.get(f"https://api.twitch.tv/helix/users/follows?to_id={streamer_id}", headers = header)
-    data = response.json()["data"]
+    data = response.json()['data']
 
+
+def fill_text_object():
+    global source_name
+    global text
+    
+    source = obs.obs_get_source_by_name(source_name)
+    
+    if source is not None:
+        settings = obs.obs_data_create()
+        obs.obs_data_set_string(settings, "text", text)
+        obs.obs_source_update(source, settings)
+        obs.obs_data_release(settings)
+        obs.obs_source_release(source)

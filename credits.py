@@ -11,7 +11,7 @@ data = {}
 
 
 def script_description():
-    return "Fill a text source with follower list."
+    return "Set credits to a specific Text Source, when switching to a given Scene."
 
 
 def script_properties():
@@ -85,8 +85,8 @@ def fill_text_source():
 
     source = obs.obs_get_source_by_name(source_name)
     text_moderators = "arms_jabberwock\nAyysura\nmaxome_\nodremi_magique\nPierrow__\nsazai_tetsibap\n"
-    text_thanks = "Merci à tous\nd'avoir suivi !\n♥♥♥"
-    text = f"\n\n\n\n\n\n\n\n\n\nStreamer\n\n{text_streamer}\n\nModerateurs\n\n{text_moderators}\n\nFollowers\n\n{text_followers}\n\n{text_thanks}"
+    text_thanks = "Merci à tous\nd'avoir suivi !\n♥ ♥ ♥"
+    text = f"\n\n\n\n\n\n\n\n\n\n\nStreamer\n-\n{text_streamer}\n\nModérateurs\n-\n{text_moderators}\n\nFollowers\n-\n{text_followers}\n\n\n{text_thanks}"
 
     if source is not None:
         settings = obs.obs_data_create()

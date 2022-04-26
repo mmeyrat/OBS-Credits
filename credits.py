@@ -4,7 +4,8 @@ from config import *
 
 
 source_name = ""
-text = ""
+text_streamer = ""
+text_followers = ""
 streamer_id = "433976821"
 data = {}
 
@@ -54,16 +55,9 @@ def handle_scene_change():
     if scene_name == "Fin":
         fetch_followers()
         update_text()
-        fill_text_object()
+        fill_text_source()
 
     obs.obs_source_release(scene)
-
-
-def update_text():
-    global text
-
-    for r in data:
-        text += f"{r['from_name']}\n"
 
 
 def fetch_followers(): 
@@ -74,15 +68,31 @@ def fetch_followers():
     data = response.json()['data']
 
 
-def fill_text_object():
+def update_text():
+    global text_streamer
+    global text_followers
+
+    text_streamer = f"{data[0]['to_name']}\n"
+
+    for r in reversed(data):
+        text_followers += f"{r['from_name']}\n"
+
+
+def fill_text_source():
     global source_name
-    global text
-    
+    global text_streamer
+    global text_followers
+
     source = obs.obs_get_source_by_name(source_name)
-    
+    text_moderators = "arms_jabberwock\nAyysura\nmaxome_\nodremi_magique\nPierrow__\nsazai_tetsibap\n"
+    text_thanks = "Merci à tous\nd'avoir suivi !\n♥♥♥"
+    text = f"\n\n\n\n\n\n\n\n\n\nStreamer\n\n{text_streamer}\n\nModerateurs\n\n{text_moderators}\n\nFollowers\n\n{text_followers}\n\n{text_thanks}"
+
     if source is not None:
         settings = obs.obs_data_create()
         obs.obs_data_set_string(settings, "text", text)
         obs.obs_source_update(source, settings)
         obs.obs_data_release(settings)
         obs.obs_source_release(source)
+    
+    text_followers = ""

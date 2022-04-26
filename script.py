@@ -2,17 +2,11 @@ import requests as rq
 import obspython as obs
 from config import *
 
+
 source_name = ""
-test = "a"
+text = ""
 streamer_id = "433976821"
-
-header = {"Client-ID": client_id, "Authorization": f"Bearer {auth_token}"}
-response = rq.get(f"https://api.twitch.tv/helix/users/follows?to_id={streamer_id}", headers = header)
-data = response.json()
-
-for r in data["data"]:
-    test = r["from_name"]
-    print(r["from_name"])
+data = {}
 
 
 def script_description():
@@ -21,10 +15,11 @@ def script_description():
 
 def script_properties():
     props = obs.obs_properties_create()
+    sources = obs.obs_enum_sources()
     p = obs.obs_properties_add_list(props, "source", "Text Source",
                                     obs.OBS_COMBO_TYPE_EDITABLE,
                                     obs.OBS_COMBO_FORMAT_STRING)
-    sources = obs.obs_enum_sources()
+    
     if sources is not None:
         for source in sources:
             source_id = obs.obs_source_get_id(source)
@@ -39,13 +34,15 @@ def script_properties():
 
 def script_update(settings):
     global source_name
+    
     source_name = obs.obs_data_get_string(settings, "source")
 
 
-def update_text():
+def fill_text_object():
     global source_name
+    global text
+    
     source = obs.obs_get_source_by_name(source_name)
-    text = "Hello World"
     
     if source is not None:
         settings = obs.obs_data_create()
@@ -53,6 +50,13 @@ def update_text():
         obs.obs_source_update(source, settings)
         obs.obs_data_release(settings)
         obs.obs_source_release(source)
+
+
+def update_text():
+    global text
+
+    for r in data:
+        text += f"{r['from_name']}\n"
 
 
 def script_load(settings):
@@ -69,6 +73,17 @@ def handle_scene_change():
     scene_name = obs.obs_source_get_name(scene)
 
     if scene_name == "Fin":
+        fetch_followers()
         update_text()
+        fill_text_object()
 
     obs.obs_source_release(scene)
+
+
+def fetch_followers(): 
+    global data
+
+    header = {"Client-ID": client_id, "Authorization": f"Bearer {auth_token}"}
+    response = rq.get(f"https://api.twitch.tv/helix/users/follows?to_id={streamer_id}", headers = header)
+    data = response.json()["data"]
+

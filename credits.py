@@ -84,9 +84,8 @@ def fill_text_source():
     global text_followers
 
     source = obs.obs_get_source_by_name(source_name)
-    text_moderators = "arms_jabberwock\nAyysura\nmaxome_\nodremi_magique\nPierrow__\nsazai_tetsibap\n"
     text_thanks = "Merci à tous\nd'avoir suivi !\n♥ ♥ ♥"
-    text = f"\n\n\n\n\n\n\n\n\n\n\nStreamer\n-\n{text_streamer}\n\nModérateurs\n-\n{text_moderators}\n\nFollowers\n-\n{text_followers}\n\n\n{text_thanks}"
+    text = f"\n\n\n\n\n\n\n\n\n\n\nStreamer\n-\n{text_streamer}\n\nFollowers\n-\n{text_followers}\n\n\n{text_thanks}"
 
     if source is not None:
         settings = obs.obs_data_create()

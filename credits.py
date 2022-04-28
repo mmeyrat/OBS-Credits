@@ -3,7 +3,8 @@ import obspython as obs
 from config import *
 
 
-source_name = ""
+selected_source = ""
+selected_scene = ""
 text_streamer = ""
 text_followers = ""
 streamer_id = ""
@@ -16,22 +17,31 @@ def script_description():
 
 def script_properties():
     props = obs.obs_properties_create()
-    sources = obs.obs_enum_sources()
-    properties = obs.obs_properties_add_list(props, "source", "Text Source",
-                                    obs.OBS_COMBO_TYPE_EDITABLE,
-                                    obs.OBS_COMBO_FORMAT_STRING)
-    
     obs.obs_properties_add_text(props, "streamer_id", "Streamer ID", obs.OBS_TEXT_DEFAULT)
     
+    sources = obs.obs_enum_sources()
+    sources_list = obs.obs_properties_add_list(props, "source", "Text Source",
+                                    obs.OBS_COMBO_TYPE_EDITABLE,
+                                    obs.OBS_COMBO_FORMAT_STRING)    
     if sources is not None:
         for source in sources:
             source_id = obs.obs_source_get_id(source)
             if source_id == "text_gdiplus" or source_id == "text_ft2_source":
                 name = obs.obs_source_get_name(source)
-                obs.obs_property_list_add_string(properties, name, name)
+                obs.obs_property_list_add_string(sources_list, name, name)
+        obs.sdource_list_release(sources)
+    
+    obs.obs_data_release(sources_list)
 
-        obs.source_list_release(sources)
-
+    scenes = obs.obs_frontend_get_scene_names()
+    scenes_list = obs.obs_properties_add_list(props, "scene", "Scene",
+                                    obs.OBS_COMBO_TYPE_EDITABLE,
+                                    obs.OBS_COMBO_FORMAT_STRING)    
+    if scenes is not None:
+        for scene in scenes:
+            obs.obs_property_list_add_string(scenes_list, scene, scene)
+        obs.sceneitem_list_release(scenes)
+    
     return props
 
 
@@ -40,10 +50,12 @@ def script_load(settings):
 
 
 def script_update(settings):
-    global source_name
+    global selected_source
+    global selected_scene
     global streamer_id
 
-    source_name = obs.obs_data_get_string(settings, "source")
+    selected_source = obs.obs_data_get_string(settings, "source")
+    selected_scene = obs.obs_data_get_string(settings, "scene")
     streamer_id = obs.obs_data_get_string(settings, "streamer_id")
 
 
@@ -54,13 +66,13 @@ def handle_event(event):
 
 def handle_scene_change():
     global data
+    global selected_scene
 
     scene = obs.obs_frontend_get_current_scene()
     scene_name = obs.obs_source_get_name(scene)
 
-    if scene_name == "Fin":
+    if scene_name == selected_scene:
         fetch_followers()
-        print(data)
         if len(data) > 0:
             update_text()
             fill_text_source()
@@ -68,6 +80,7 @@ def handle_scene_change():
             print("This streamer has no followers.")
 
     obs.obs_source_release(scene)
+    obs.obs_source_release(scene_name)
 
 
 def fetch_followers(): 
@@ -89,11 +102,11 @@ def update_text():
 
 
 def fill_text_source():
-    global source_name
+    global selected_source
     global text_streamer
     global text_followers
 
-    source = obs.obs_get_source_by_name(source_name)
+    source = obs.obs_get_source_by_name(selected_source)
     text_thanks = "Merci à tous\nd'avoir suivi !\n♥ ♥ ♥"
     text = f"\n\n\n\n\n\n\n\n\n\nStreamer\n-\n{text_streamer}\n\nFollowers\n-\n{text_followers}\n\n\n{text_thanks}"
 

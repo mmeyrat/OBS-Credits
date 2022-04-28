@@ -29,9 +29,9 @@ def script_properties():
             if source_id == "text_gdiplus" or source_id == "text_ft2_source":
                 name = obs.obs_source_get_name(source)
                 obs.obs_property_list_add_string(sources_list, name, name)
-        obs.sdource_list_release(sources)
+        obs.source_list_release(sources)
     
-    obs.obs_data_release(sources_list)
+    #obs.obs_data_release(sources_list)
 
     scenes = obs.obs_frontend_get_scene_names()
     scenes_list = obs.obs_properties_add_list(props, "scene", "Scene",
@@ -80,7 +80,7 @@ def handle_scene_change():
             print("This streamer has no followers.")
 
     obs.obs_source_release(scene)
-    obs.obs_source_release(scene_name)
+    #obs.obs_source_release(scene_name)
 
 
 def fetch_followers(): 

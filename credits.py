@@ -12,7 +12,7 @@ data = {}
 
 
 def script_description():
-    return "Set credits to a specific Text Source, when switching to a given Scene. Credits are a list of followers."
+    return "Set credits to a specific Text Source, when switching to a given Scene. Credits are formatted from a list of the last 100 followers.\n\nMade by mmeyrat"
 
 
 def script_properties():
@@ -30,8 +30,6 @@ def script_properties():
                 name = obs.obs_source_get_name(source)
                 obs.obs_property_list_add_string(sources_list, name, name)
         obs.source_list_release(sources)
-    
-    #obs.obs_data_release(sources_list)
 
     scenes = obs.obs_frontend_get_scene_names()
     scenes_list = obs.obs_properties_add_list(props, "scene", "Scene",
@@ -69,9 +67,8 @@ def handle_scene_change():
     global selected_scene
 
     scene = obs.obs_frontend_get_current_scene()
-    scene_name = obs.obs_source_get_name(scene)
 
-    if scene_name == selected_scene:
+    if obs.obs_source_get_name(scene) == selected_scene:
         fetch_followers()
         if len(data) > 0:
             update_text()
@@ -80,7 +77,6 @@ def handle_scene_change():
             print("This streamer has no followers.")
 
     obs.obs_source_release(scene)
-    #obs.obs_source_release(scene_name)
 
 
 def fetch_followers(): 

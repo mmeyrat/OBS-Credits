@@ -6,27 +6,29 @@ from config import *
 source_name = ""
 text_streamer = ""
 text_followers = ""
-streamer_id = "433976821"
+streamer_id = ""
 data = {}
 
 
 def script_description():
-    return "Set credits to a specific Text Source, when switching to a given Scene."
+    return "Set credits to a specific Text Source, when switching to a given Scene. Credits are a list of followers."
 
 
 def script_properties():
     props = obs.obs_properties_create()
     sources = obs.obs_enum_sources()
-    p = obs.obs_properties_add_list(props, "source", "Text Source",
+    properties = obs.obs_properties_add_list(props, "source", "Text Source",
                                     obs.OBS_COMBO_TYPE_EDITABLE,
                                     obs.OBS_COMBO_FORMAT_STRING)
+    
+    obs.obs_properties_add_text(props, "streamer_id", "Streamer ID", obs.OBS_TEXT_DEFAULT)
     
     if sources is not None:
         for source in sources:
             source_id = obs.obs_source_get_id(source)
             if source_id == "text_gdiplus" or source_id == "text_ft2_source":
                 name = obs.obs_source_get_name(source)
-                obs.obs_property_list_add_string(p, name, name)
+                obs.obs_property_list_add_string(properties, name, name)
 
         obs.source_list_release(sources)
 
@@ -39,8 +41,10 @@ def script_load(settings):
 
 def script_update(settings):
     global source_name
-    
+    global streamer_id
+
     source_name = obs.obs_data_get_string(settings, "source")
+    streamer_id = obs.obs_data_get_string(settings, "streamer_id")
 
 
 def handle_event(event):
@@ -49,13 +53,19 @@ def handle_event(event):
 
 
 def handle_scene_change():
+    global data
+
     scene = obs.obs_frontend_get_current_scene()
     scene_name = obs.obs_source_get_name(scene)
 
     if scene_name == "Fin":
         fetch_followers()
-        update_text()
-        fill_text_source()
+        print(data)
+        if len(data) > 0:
+            update_text()
+            fill_text_source()
+        else:
+            print("This streamer has no followers.")
 
     obs.obs_source_release(scene)
 
@@ -64,7 +74,7 @@ def fetch_followers():
     global data
 
     header = {"Client-ID": client_id, "Authorization": f"Bearer {auth_token}"}
-    response = rq.get(f"https://api.twitch.tv/helix/users/follows?to_id={streamer_id}", headers = header)
+    response = rq.get(f"https://api.twitch.tv/helix/users/follows?to_id={streamer_id}&first=100", headers = header)
     data = response.json()['data']
 
 
@@ -85,7 +95,7 @@ def fill_text_source():
 
     source = obs.obs_get_source_by_name(source_name)
     text_thanks = "Merci à tous\nd'avoir suivi !\n♥ ♥ ♥"
-    text = f"\n\n\n\n\n\n\n\n\n\n\nStreamer\n-\n{text_streamer}\n\nFollowers\n-\n{text_followers}\n\n\n{text_thanks}"
+    text = f"\n\n\n\n\n\n\n\n\n\nStreamer\n-\n{text_streamer}\n\nFollowers\n-\n{text_followers}\n\n\n{text_thanks}"
 
     if source is not None:
         settings = obs.obs_data_create()

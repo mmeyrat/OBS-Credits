@@ -3,6 +3,7 @@ import obspython as obs
 from config import *
 
 
+header = {"Client-ID": client_id, "Authorization": f"Bearer {auth_token}"}
 selected_source = ""
 selected_scene = ""
 text_streamer = ""
@@ -63,9 +64,6 @@ def handle_event(event):
 
 
 def handle_scene_change():
-    global data
-    global selected_scene
-
     scene = obs.obs_frontend_get_current_scene()
 
     if obs.obs_source_get_name(scene) == selected_scene:
@@ -82,8 +80,7 @@ def handle_scene_change():
 def fetch_followers(): 
     global data
 
-    header = {"Client-ID": client_id, "Authorization": f"Bearer {auth_token}"}
-    response = rq.get(f"https://api.twitch.tv/helix/users/follows?to_id={streamer_id}&first=100", headers = header)
+    response = rq.get(f"https://api.twitch.tv/helix/channels/followers?broadcaster_id={streamer_id}&first=100", headers = header)
     data = response.json()['data']
 
 
@@ -91,15 +88,14 @@ def update_text():
     global text_streamer
     global text_followers
 
-    text_streamer = f"{data[0]['to_name']}\n"
+    response = rq.get(f"https://api.twitch.tv/helix/users?id={streamer_id}", headers = header)
+    text_streamer = f"{response.json()['data'][0]['display_name']}\n"
 
     for r in reversed(data):
-        text_followers += f"{r['from_name']}\n"
+        text_followers += f"{r['user_name']}\n"
 
 
 def fill_text_source():
-    global selected_source
-    global text_streamer
     global text_followers
 
     source = obs.obs_get_source_by_name(selected_source)
